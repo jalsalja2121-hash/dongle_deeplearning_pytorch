@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(C:/Users/user/AppData/Local/Programs/Python/Python312/python.exe:*)",
+      "Bash(.venvScriptsactivate)",
+      "Bash(pip install:*)",
+      "Bash(./venv/Scripts/python.exe:*)",
+      "Bash(del data_module.py example_usage.py)",
+      "Bash(dir:*)"
+    ]
+  }
+}
