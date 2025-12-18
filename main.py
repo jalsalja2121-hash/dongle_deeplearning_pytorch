@@ -52,32 +52,32 @@ def main():
     """가위바위보 이미지 분류 메인 실행 함수"""
 
     # ========================================
-    # 하이퍼파라미터 설정
+    # 하이퍼파라미터 설정 (ViT-B/16 논문 기반)
     # ========================================
     # 데이터 설정
-    BATCH_SIZE = 32
-    IMAGE_SIZE = (224, 224)
+    BATCH_SIZE = 32  # 기존 설정 유지 (ViT 논문: 512)
+    IMAGE_SIZE = (224, 224)  # ViT 논문: 224x224
     NUM_WORKERS = 0
 
     # 학습 설정
-    EPOCHS = 10
-    LEARNING_RATE = 1e-3  # Fine-tuning: 1e-6, Feature Extractor: 1e-4
-    FEATURE_EXTRACTOR = True  # False: Fine-tuning, True: Feature Extractor
+    EPOCHS = 300  # ViT 논문: 300 epochs (ImageNet-21k fine-tuning)
+    LEARNING_RATE = 1e-3  # 기존 설정 유지 (ViT 논문: 3e-3)
+    FEATURE_EXTRACTOR = True  # Feature Extractor 모드 (ViT 논문: False)
 
-    # 옵티마이저 설정
-    OPTIMIZER = 'adam'  # 'adam', 'adamw', 'sgd'
-    WEIGHT_DECAY = 0  # L2 regularization (0 = 사용 안 함)
-    MOMENTUM = 0.9  # SGD 사용 시 모멘텀
+    # 옵티마이저 설정 (ViT 논문: Adam with β1=0.9, β2=0.999)
+    OPTIMIZER = 'adam'
+    WEIGHT_DECAY = 0.1  # ViT 논문: 0.1 (weight decay)
+    MOMENTUM = 0.9  # Adam에서는 사용 안 함
 
-    # Learning Rate Scheduler 설정
-    USE_SCHEDULER = False  # True: 스케줄러 사용, False: 사용 안 함
-    SCHEDULER_NAME = 'step'  # 'step', 'cosine', 'reduce'
-    SCHEDULER_STEP_SIZE = 5  # Step/Reduce: N 에포크마다 감소, Cosine: 주기
-    SCHEDULER_GAMMA = 0.1  # 학습률 감소 비율
+    # Learning Rate Scheduler 설정 (ViT 논문: Linear warmup + decay)
+    USE_SCHEDULER = True
+    SCHEDULER_NAME = 'cosine'  # ViT 논문: Cosine annealing
+    SCHEDULER_STEP_SIZE = 300  # Total epochs
+    SCHEDULER_GAMMA = 0.1  # 사용 안 함 (cosine에서)
 
     # Loss Function 설정
-    LOSS_FUNCTION = 'crossentropy'  # 'crossentropy', 'focal', 'label_smoothing'
-    LABEL_SMOOTHING = 0.0  # Label Smoothing 값 (0.0 = 사용 안 함, 0.1 권장)
+    LOSS_FUNCTION = 'crossentropy'  # ViT 논문: Cross-entropy
+    LABEL_SMOOTHING = 0.0  # 필요시 0.1 사용 가능
 
     # ========================================
     # 1. 데이터 준비
