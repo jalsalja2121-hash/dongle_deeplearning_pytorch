@@ -92,16 +92,10 @@ pip install pillow
 
 # NumPy - 수치 연산 (선택사항, PyTorch에서 자동 설치)
 pip install numpy
-```
-!pip install roboflow
 
-#### 데이터셋 다운로드
-from roboflow import Roboflow
-rf = Roboflow(api_key="E8WIPjtVKD19G5AAvr5A")
-project = rf.workspace("cpecgm3").project("rock-paper-scissor-p13xv")
-version = project.version(2)
-dataset = version.download("folder")
-                
+# Roboflow - 데이터셋 다운로드용 (선택사항)
+pip install roboflow
+```
 
 #### 필수 패키지 목록
 - **torch**: PyTorch 딥러닝 프레임워크
@@ -109,11 +103,28 @@ dataset = version.download("folder")
 - **matplotlib**: 학습 결과 그래프 시각화
 - **pillow**: 이미지 파일 로딩 및 처리
 - **numpy**: 배열 및 수치 연산 (PyTorch 의존성)
+- **roboflow**: 데이터셋 다운로드 (선택사항)
 
 ## 사용 방법
 
 ### 1. 데이터셋 준비
-데이터셋을 압축 해제하려면 `main.py`에서 주석을 해제:
+
+#### 방법 1: Roboflow에서 다운로드 (권장)
+```bash
+pip install roboflow
+```
+
+```python
+from roboflow import Roboflow
+
+rf = Roboflow(api_key="E8WIPjtVKD19G5AAvr5A")
+project = rf.workspace("cpecgm3").project("rock-paper-scissor-p13xv")
+version = project.version(2)
+dataset = version.download("folder")
+```
+
+#### 방법 2: 압축 파일 해제
+데이터셋 압축 파일이 있는 경우 `main.py`에서 주석을 해제:
 ```python
 import Extract
 Extract.extract_data()
