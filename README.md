@@ -27,8 +27,8 @@ PyTorch와 Vision Transformer (ViT)를 사용한 가위바위보 이미지 분�
 
 ```
 AI/
-├── Extract.py          # 데이터셋 압축 해제 모듈
-├── DataSet.py          # 데이터 로딩 및 전처리 모듈
+├── extract.py          # 데이터셋 압축 해제 모듈
+├── dataset.py          # 데이터 로딩 및 전처리 모듈
 ├── model.py            # 모델 정의 (ViT, ResNet50)
 ├── trainer.py          # 학습 및 평가 모듈
 ├── main.py             # 메인 실행 파일
@@ -37,7 +37,7 @@ AI/
 
 ## 주요 기능
 
-### 1. DataSet.py - 데이터 관리
+### 1. dataset.py - 데이터 관리
 - `RockPaperScissorsDataModule`: 가위바위보 데이터셋 로딩 및 전처리
   - 데이터 증강 (Data Augmentation)
   - Train/Validation/Test DataLoader 제공
@@ -126,8 +126,8 @@ dataset = version.download("folder")
 #### 방법 2: 압축 파일 해제
 데이터셋 압축 파일이 있는 경우 `main.py`에서 주석을 해제:
 ```python
-import Extract
-Extract.extract_data()
+import extract
+extract.extract_data()
 ```
 
 ### 2. 학습 실행

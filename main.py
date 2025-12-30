@@ -1,6 +1,6 @@
 import torch
 import matplotlib.pyplot as plt
-from DataSet import RockPaperScissorsDataModule
+from dataset import RockPaperScissorsDataModule
 from model import MyVit_b_16  # MyResNet50도 사용 가능
 from trainer import RockPaperScissorsTrainer
 
@@ -87,12 +87,12 @@ def main():
     print("=" * 60)
 
     # 데이터 추출 (처음 한 번만 실행)
-    # import Extract
-    # Extract.extract_data()
+    # import extract
+    # extract.extract_data()
 
     # 데이터 모듈 인스턴스 생성
     data_module = RockPaperScissorsDataModule(
-        data_root='.',
+        data_root='rock_paper_scissor',
         batch_size=BATCH_SIZE,
         image_size=IMAGE_SIZE,
         num_workers=NUM_WORKERS

@@ -1,0 +1,23 @@
+# Experiment: ViT-B/16 on Rock Paper Scissor Dataset
+
+experiment:
+  name: vit_b16_rock_paper_scissor
+  description: "Vision Transformer B/16 training on rock-paper-scissor dataset"
+
+# Model configuration
+model_config: configs/models/vit_b16.yaml
+
+# Dataset configuration
+dataset_config: configs/datasets/rock_paper_scissor.yaml
+
+# Override settings (optional)
+overrides:
+  training:
+    epochs: 100  # Override from model config
+    batch_size: 32
+
+# Output settings
+output:
+  save_dir: outputs/exp_vit_rps
+  model_name: vit_b16_rps.pth
+  plot_name: training_history.png

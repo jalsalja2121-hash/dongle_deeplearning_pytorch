@@ -1,0 +1,23 @@
+# Experiment: ResNet50 on Rock Paper Scissor Dataset
+
+experiment:
+  name: resnet50_rock_paper_scissor
+  description: "ResNet50 training on rock-paper-scissor dataset"
+
+# Model configuration
+model_config: configs/models/resnet50.yaml
+
+# Dataset configuration
+dataset_config: configs/datasets/rock_paper_scissor.yaml
+
+# Override settings (optional)
+overrides:
+  training:
+    epochs: 50
+    batch_size: 32
+
+# Output settings
+output:
+  save_dir: outputs/exp_resnet_rps
+  model_name: resnet50_rps.pth
+  plot_name: training_history.png

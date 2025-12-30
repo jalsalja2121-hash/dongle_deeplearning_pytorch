@@ -6,7 +6,9 @@
       "Bash(pip install:*)",
       "Bash(./venv/Scripts/python.exe:*)",
       "Bash(del data_module.py example_usage.py)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(move rock_paper_scissor data)",
+      "Bash(powershell -Command \"Move-Item -Path rock_paper_scissor -Destination data/ -Force\")"
     ]
   }
 }
