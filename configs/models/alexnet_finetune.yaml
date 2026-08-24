@@ -1,0 +1,8 @@
+# AlexNet Fine-tuning Configuration
+
+type: 'alexnet'
+num_classes: 3
+feature_extractor: false  # Train all weights
+pretrained: true
+
+description: 'AlexNet Full fine-tuning mode - Train entire network'

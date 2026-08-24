@@ -1,0 +1,38 @@
+# AlexNet Full Training Experiment
+
+experiment:
+  name: 'alexnet_rps_full'
+  description: 'Full AlexNet training with paper hyperparameters'
+  seed: 42
+
+# Dataset
+dataset_config: 'configs/datasets/rps_dataset1.yaml'
+
+# Model
+model_config: 'configs/models/alexnet_feature_extractor.yaml'
+
+# Training (AlexNet 논문 기반)
+training:
+  epochs: 90  # AlexNet 논문: 90 epochs
+  learning_rate: 0.01  # AlexNet 논문: 0.01 (초기)
+
+  optimizer:
+    type: 'sgd'  # AlexNet 논문: SGD with momentum
+    weight_decay: 0.0005  # AlexNet 논문: 0.0005
+    momentum: 0.9  # AlexNet 논문: 0.9
+
+  scheduler:
+    use: true
+    type: 'step'  # AlexNet 논문: manual LR decay
+    step_size: 30  # 30 에포크마다 감소
+    gamma: 0.1  # 10배씩 감소
+
+  loss:
+    type: 'crossentropy'
+    label_smoothing: 0.0
+
+# Output
+output:
+  save_dir: 'outputs/alexnet_rps_full'
+  model_name: 'model.pth'
+  plot_name: 'training_history.png'

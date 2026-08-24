@@ -34,6 +34,7 @@ desktop.ini
 
 # Data
 data/
+!data/README.md
 dataset/
 datasets/
 train/
@@ -51,6 +52,10 @@ checkpoints/
 
 # Roboflow
 .roboflow/
+Rock-Paper-Scissor*/
+
+# Download configs with API keys
+configs/download/roboflow.yaml
 
 # Environment variables
 .env

@@ -1,26 +1,9 @@
+"""
+Rock-Paper-Scissors Trainer
+"""
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-
-
-class FocalLoss(nn.Module):
-    """
-    Focal Loss - 불균형 데이터셋에 유용한 손실 함수
-
-    Args:
-        alpha (float): 클래스 가중치 (기본값: 0.25)
-        gamma (float): focusing parameter (기본값: 2.0)
-    """
-    def __init__(self, alpha=0.25, gamma=2.0):
-        super().__init__()
-        self.alpha = alpha
-        self.gamma = gamma
-
-    def forward(self, inputs, targets):
-        ce_loss = F.cross_entropy(inputs, targets, reduction='none')
-        pt = torch.exp(-ce_loss)
-        focal_loss = self.alpha * (1 - pt) ** self.gamma * ce_loss
-        return focal_loss.mean()
+from .losses import FocalLoss
 
 
 class RockPaperScissorsTrainer:
@@ -55,7 +38,10 @@ class RockPaperScissorsTrainer:
         use_scheduler=False,
         scheduler_name='step',
         scheduler_step_size=5,
-        scheduler_gamma=0.1
+        scheduler_gamma=0.1,
+        early_stopping_patience=None,
+        early_stopping_min_delta=0.0001,
+        early_stopping_monitor='val_loss'
     ):
         self.model = model.to(device)
         self.device = device
@@ -67,6 +53,14 @@ class RockPaperScissorsTrainer:
         self.scheduler_name = scheduler_name.lower()
         self.loss_function_name = loss_function_name.lower()
         self.label_smoothing = label_smoothing
+
+        # Early Stopping 설정
+        self.early_stopping_patience = early_stopping_patience
+        self.early_stopping_min_delta = early_stopping_min_delta
+        self.early_stopping_monitor = early_stopping_monitor
+        self.early_stopping_counter = 0
+        self.best_metric = float('inf') if 'loss' in early_stopping_monitor else 0.0
+        self.best_model_state = None
 
         # 손실함수 정의
         self.loss_function = self._create_loss_function()
@@ -257,6 +251,34 @@ class RockPaperScissorsTrainer:
             else:
                 current_lr = self.learning_rate
 
+            # Early Stopping 체크
+            early_stop = False
+            if self.early_stopping_patience is not None:
+                # 모니터링할 메트릭 가져오기
+                if self.early_stopping_monitor == 'val_loss':
+                    current_metric = val_loss
+                    improved = (self.best_metric - current_metric) > self.early_stopping_min_delta
+                elif self.early_stopping_monitor == 'val_accuracy':
+                    current_metric = val_acc
+                    improved = (current_metric - self.best_metric) > self.early_stopping_min_delta
+                else:
+                    current_metric = val_loss
+                    improved = (self.best_metric - current_metric) > self.early_stopping_min_delta
+
+                if improved:
+                    self.best_metric = current_metric
+                    self.best_model_state = self.model.state_dict().copy()
+                    self.early_stopping_counter = 0
+                    if verbose:
+                        print(f'  [Early Stopping] Metric improved to {current_metric:.4f}')
+                else:
+                    self.early_stopping_counter += 1
+                    if verbose:
+                        print(f'  [Early Stopping] No improvement for {self.early_stopping_counter}/{self.early_stopping_patience} epochs')
+
+                    if self.early_stopping_counter >= self.early_stopping_patience:
+                        early_stop = True
+
             # 진행 상황 출력
             if verbose:
                 print(f'Epoch [{epoch}/{epochs}]')
@@ -265,6 +287,17 @@ class RockPaperScissorsTrainer:
                 if self.scheduler is not None:
                     print(f'  LR    - {current_lr:.2e}')
                 print()
+
+            # Early Stopping 실행
+            if early_stop:
+                if verbose:
+                    print(f'[Early Stopping] Training stopped at epoch {epoch}')
+                    print(f'[Early Stopping] Best {self.early_stopping_monitor}: {self.best_metric:.4f}')
+                    print('[Early Stopping] Restoring best model...')
+                # 최고 성능 모델로 복원
+                if self.best_model_state is not None:
+                    self.model.load_state_dict(self.best_model_state)
+                break
 
         return {
             'train': self.train_history,

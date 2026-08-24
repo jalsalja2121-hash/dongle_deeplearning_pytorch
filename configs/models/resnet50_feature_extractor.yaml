@@ -1,0 +1,8 @@
+# ResNet50 Feature Extractor Configuration
+
+type: 'resnet50'
+num_classes: 3
+feature_extractor: true
+pretrained: true
+
+description: 'ResNet50 Feature Extractor mode'

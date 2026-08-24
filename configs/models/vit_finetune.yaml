@@ -1,0 +1,8 @@
+# Vision Transformer Fine-tuning Configuration
+
+type: 'vit_b16'
+num_classes: 3
+feature_extractor: false  # Train all weights
+pretrained: true
+
+description: 'ViT-B/16 Full fine-tuning mode'

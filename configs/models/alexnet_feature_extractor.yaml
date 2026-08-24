@@ -1,0 +1,8 @@
+# AlexNet Feature Extractor Configuration
+
+type: 'alexnet'
+num_classes: 3
+feature_extractor: true  # Freeze pretrained weights, train only classifier
+pretrained: true
+
+description: 'AlexNet Feature Extractor mode - Fast training'

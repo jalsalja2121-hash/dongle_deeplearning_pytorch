@@ -1,223 +1,186 @@
+"""
+Rock-Paper-Scissors Classifier Training Script
+YAML 기반 실험 관리 시스템
+"""
+import argparse
+from pathlib import Path
+import yaml
 import torch
 import matplotlib.pyplot as plt
-from dataset import RockPaperScissorsDataModule
-from model import MyVit_b_16  # MyResNet50도 사용 가능
-from trainer import RockPaperScissorsTrainer
+
+from src.datasets import create_dataset
+from src.models import create_model
+from src.trainers import create_trainer
 
 
-def plot_training_history(history, save_path='training_history.png'):
-    """
-    학습 히스토리 시각화
+def print_section(title):
+    """섹션 헤더 출력"""
+    print("\n" + "=" * 70)
+    print(title)
+    print("=" * 70)
 
-    Args:
-        history (dict): trainer.fit()의 반환값
-        save_path (str): 저장할 이미지 경로
-    """
-    train_loss = history['train']['loss']
-    train_acc = history['train']['accuracy']
-    val_loss = history['val']['loss']
-    val_acc = history['val']['accuracy']
 
-    epochs = range(1, len(train_loss) + 1)
+def load_config(config_path):
+    """YAML 설정 파일 로드 및 병합"""
+    config_file = Path(config_path)
+    if not config_file.exists():
+        raise FileNotFoundError(f"Config file not found: {config_path}")
 
-    plt.figure(figsize=(12, 5))
+    with open(config_file, 'r', encoding='utf-8') as f:
+        config = yaml.safe_load(f)
+
+    # 참조된 설정 파일들 로드
+    if 'dataset_config' in config:
+        with open(config['dataset_config'], 'r', encoding='utf-8') as f:
+            config['dataset'] = yaml.safe_load(f)
+
+    if 'model_config' in config:
+        with open(config['model_config'], 'r', encoding='utf-8') as f:
+            config['model'] = yaml.safe_load(f)
+
+    return config
+
+
+def plot_training_history(history, save_path):
+    """학습 히스토리 시각화"""
+    _, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
+
+    epochs = range(1, len(history['train']['loss']) + 1)
 
     # Loss plot
-    plt.subplot(1, 2, 1)
-    plt.title('Loss Trend')
-    plt.xlabel('Epochs')
-    plt.ylabel('Loss')
-    plt.grid(True)
-    plt.plot(epochs, train_loss, 'b-', label='Train Loss')
-    plt.plot(epochs, val_loss, 'r-', label='Validation Loss')
-    plt.legend()
+    ax1.plot(epochs, history['train']['loss'], 'b-', label='Train')
+    ax1.plot(epochs, history['val']['loss'], 'r-', label='Validation')
+    ax1.set_title('Loss Trend')
+    ax1.set_xlabel('Epoch')
+    ax1.set_ylabel('Loss')
+    ax1.legend()
+    ax1.grid(True)
 
     # Accuracy plot
-    plt.subplot(1, 2, 2)
-    plt.title('Accuracy Trend')
-    plt.xlabel('Epochs')
-    plt.ylabel('Accuracy (%)')
-    plt.grid(True)
-    plt.plot(epochs, train_acc, 'b-', label='Train Accuracy')
-    plt.plot(epochs, val_acc, 'r-', label='Validation Accuracy')
-    plt.legend()
+    ax2.plot(epochs, history['train']['accuracy'], 'b-', label='Train')
+    ax2.plot(epochs, history['val']['accuracy'], 'r-', label='Validation')
+    ax2.set_title('Accuracy Trend')
+    ax2.set_xlabel('Epoch')
+    ax2.set_ylabel('Accuracy (%)')
+    ax2.legend()
+    ax2.grid(True)
 
     plt.tight_layout()
-    plt.savefig(save_path)
-    print(f"Training history plot saved to {save_path}")
-    plt.show()
+    plt.savefig(save_path, dpi=100)
+    plt.close()
+    print(f"✅ Plot saved: {save_path}")
 
 
-def main():
-    """가위바위보 이미지 분류 메인 실행 함수"""
+def main(args):
+    """메인 학습 파이프라인"""
 
-    # ========================================
-    # 하이퍼파라미터 설정 (ViT-B/16 논문 기반)
-    # ========================================
-    # 데이터 설정
-    BATCH_SIZE = 32  # 기존 설정 유지 (ViT 논문: 512)
-    IMAGE_SIZE = (224, 224)  # ViT 논문: 224x224
-    NUM_WORKERS = 0
+    # 1. 설정 로드
+    print("=" * 70)
+    print("EXPERIMENT SETUP")
+    print("=" * 70)
 
-    # 학습 설정
-    EPOCHS = 300  # ViT 논문: 300 epochs (ImageNet-21k fine-tuning)
-    LEARNING_RATE = 1e-3  # 기존 설정 유지 (ViT 논문: 3e-3)
-    FEATURE_EXTRACTOR = True  # Feature Extractor 모드 (ViT 논문: False)
+    config = load_config(args.config)
+    exp_name = config['experiment']['name']
+    print(f"Experiment: {exp_name}")
+    print(f"Config: {args.config}")
+    print(f"Description: {config['experiment'].get('description', 'N/A')}\n")
 
-    # 옵티마이저 설정 (ViT 논문: Adam with β1=0.9, β2=0.999)
-    OPTIMIZER = 'adam'
-    WEIGHT_DECAY = 0.1  # ViT 논문: 0.1 (weight decay)
-    MOMENTUM = 0.9  # Adam에서는 사용 안 함
+    # 출력 디렉토리 생성
+    output_dir = Path(config['output']['save_dir'])
+    output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Learning Rate Scheduler 설정 (ViT 논문: Linear warmup + decay)
-    USE_SCHEDULER = True
-    SCHEDULER_NAME = 'cosine'  # ViT 논문: Cosine annealing
-    SCHEDULER_STEP_SIZE = 300  # Total epochs
-    SCHEDULER_GAMMA = 0.1  # 사용 안 함 (cosine에서)
+    # 2. 데이터셋 준비
+    print_section("DATASET")
+    dataset = create_dataset(config['dataset'])
+    dataset.setup()
 
-    # Loss Function 설정
-    LOSS_FUNCTION = 'crossentropy'  # ViT 논문: Cross-entropy
-    LABEL_SMOOTHING = 0.0  # 필요시 0.1 사용 가능
+    train_loader = dataset.get_train_loader()
+    val_loader = dataset.get_validation_loader()
+    test_loader = dataset.get_test_loader()
 
-    # ========================================
-    # 1. 데이터 준비
-    # ========================================
-    print("=" * 60)
-    print("1. 데이터 로딩 중...")
-    print("=" * 60)
-
-    # 데이터 추출 (처음 한 번만 실행)
-    # import extract
-    # extract.extract_data()
-
-    # 데이터 모듈 인스턴스 생성
-    data_module = RockPaperScissorsDataModule(
-        data_root='rock_paper_scissor',
-        batch_size=BATCH_SIZE,
-        image_size=IMAGE_SIZE,
-        num_workers=NUM_WORKERS
-    )
-
-    # 데이터셋 로드 및 초기화
-    data_module.setup()
-
-    # 클래스 정보 출력
-    print(f"\n클래스 개수: {data_module.get_num_classes()}")
-    print(f"클래스 이름: {data_module.get_class_names()}")
-
-    # DataLoader 가져오기
-    train_loader = data_module.get_train_loader()
-    val_loader = data_module.get_validation_loader()
-    test_loader = data_module.get_test_loader()
-
-    # 샘플 이미지 시각화 (선택사항)
-    # data_module.visualize_batch(num_images=16, dataset='train')
-
-    # ========================================
-    # 2. 모델 초기화
-    # ========================================
-    print("\n" + "=" * 60)
-    print("2. 모델 초기화 중...")
-    print("=" * 60)
-
-    # 디바이스 설정
+    # 3. 모델 초기화
+    print_section("MODEL")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"Using device: {device}")
-    print(f"PyTorch version: {torch.__version__}")
+    print(f"Device: {device}")
 
-    # 모델 선택
-    # Option 1: Vision Transformer (ViT)
-    model = MyVit_b_16(
-        num_classes=3,
-        feature_extractor=FEATURE_EXTRACTOR,
-        pretrained=True
-    )
+    model_config = config['model'].copy()
+    model_config['num_classes'] = dataset.get_num_classes()
+    model = create_model(model_config)
 
-    # Option 2: ResNet50 (주석 해제하여 사용)
-    # model = MyResNet50(
-    #     num_classes=3,
-    #     feature_extractor=FEATURE_EXTRACTOR,
-    #     pretrained=True
-    # )
+    print(f"Architecture: {model_config['type']}")
+    print(f"Mode: {'Feature Extractor' if model_config['feature_extractor'] else 'Fine-tuning'}")
 
-    print(f"Model: {model.__class__.__name__}")
-    print(f"Mode: {'Feature Extractor' if FEATURE_EXTRACTOR else 'Fine-tuning'}")
+    # 4. Trainer 설정
+    print_section("TRAINING CONFIG")
+    training_cfg = config['training']
+    trainer = create_trainer(model, device, training_cfg)
 
-    # ========================================
-    # 3. 학습 설정
-    # ========================================
-    print("\n" + "=" * 60)
-    print("3. 학습 시작...")
-    print("=" * 60)
+    print(f"Epochs: {training_cfg['epochs']}")
+    print(f"Learning Rate: {training_cfg['learning_rate']}")
+    print(f"Optimizer: {training_cfg['optimizer']['type'].upper()}")
+    print(f"Loss: {training_cfg['loss']['type'].upper()}\n")
 
-    # Trainer 초기화
-    trainer = RockPaperScissorsTrainer(
-        model=model,
-        device=device,
-        learning_rate=LEARNING_RATE,
-        optimizer_name=OPTIMIZER,
-        weight_decay=WEIGHT_DECAY,
-        momentum=MOMENTUM,
-        loss_function_name=LOSS_FUNCTION,
-        label_smoothing=LABEL_SMOOTHING,
-        use_scheduler=USE_SCHEDULER,
-        scheduler_name=SCHEDULER_NAME,
-        scheduler_step_size=SCHEDULER_STEP_SIZE,
-        scheduler_gamma=SCHEDULER_GAMMA
-    )
+    # 5. 학습 실행
+    print_section("TRAINING")
 
-    print(f"Loss Function: {LOSS_FUNCTION.upper()}")
-    if LOSS_FUNCTION == 'label_smoothing':
-        print(f"  Label Smoothing: {LABEL_SMOOTHING}")
-    print(f"Optimizer: {OPTIMIZER.upper()}")
-    print(f"Learning Rate: {LEARNING_RATE}")
-    print(f"Weight Decay: {WEIGHT_DECAY}")
-    if OPTIMIZER.lower() == 'sgd':
-        print(f"Momentum: {MOMENTUM}")
-    if USE_SCHEDULER:
-        print(f"Scheduler: {SCHEDULER_NAME.upper()} (step_size={SCHEDULER_STEP_SIZE}, gamma={SCHEDULER_GAMMA})")
-    print(f"Batch Size: {BATCH_SIZE}")
-    print(f"Epochs: {EPOCHS}\n")
-
-    # 학습 실행
     history = trainer.fit(
         train_loader=train_loader,
         val_loader=val_loader,
-        epochs=EPOCHS,
+        epochs=training_cfg['epochs'],
         verbose=True
     )
 
-    # ========================================
-    # 4. 학습 히스토리 시각화
-    # ========================================
-    print("\n" + "=" * 60)
-    print("4. 학습 히스토리 시각화 중...")
-    print("=" * 60)
+    # 6. 평가 및 저장
+    print_section("EVALUATION & SAVING")
 
-    plot_training_history(history, save_path='training_history.png')
+    # 시각화
+    plot_path = output_dir / config['output']['plot_name']
+    plot_training_history(history, plot_path)
 
-    # ========================================
-    # 5. 테스트
-    # ========================================
-    print("\n" + "=" * 60)
-    print("5. 테스트 평가 중...")
-    print("=" * 60)
+    # 테스트
+    test_loss, test_acc = trainer.test(test_loader, verbose=True)
 
-    trainer.test(test_loader, verbose=True)
+    # 모델 저장
+    model_path = output_dir / config['output']['model_name']
+    trainer.save_model(str(model_path))
 
-    # ========================================
-    # 6. 모델 저장
-    # ========================================
-    print("\n" + "=" * 60)
-    print("6. 모델 저장 중...")
-    print("=" * 60)
+    # 설정 및 결과 저장
+    with open(output_dir / 'config.yaml', 'w', encoding='utf-8') as f:
+        yaml.dump(config, f, default_flow_style=False)
 
-    trainer.save_model('rock_paper_scissors_model.pth')
+    results = {
+        'test_accuracy': float(test_acc),
+        'test_loss': float(test_loss),
+        'best_val_accuracy': float(max(history['val']['accuracy'])),
+        'final_train_accuracy': float(history['train']['accuracy'][-1])
+    }
+    with open(output_dir / 'results.yaml', 'w', encoding='utf-8') as f:
+        yaml.dump(results, f, default_flow_style=False)
 
-    print("\n" + "=" * 60)
-    print("학습 완료!")
-    print("=" * 60)
+    # 최종 요약
+    print_section("TRAINING COMPLETED")
+    print(f"Test Accuracy: {test_acc:.2f}%")
+    print(f"Best Val Accuracy: {max(history['val']['accuracy']):.2f}%")
+    print(f"Results: {output_dir}")
+    print("=" * 70)
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(
+        description='Train Rock-Paper-Scissors Classifier',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  python main.py --config configs/experiments/vit_rps_quick.yaml
+  python main.py --config configs/experiments/vit_rps_full.yaml
+        """
+    )
+    parser.add_argument(
+        '--config',
+        type=str,
+        required=True,
+        help='Path to experiment config YAML file'
+    )
+
+    args = parser.parse_args()
+    main(args)

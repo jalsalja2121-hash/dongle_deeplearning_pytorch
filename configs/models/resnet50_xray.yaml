@@ -1,0 +1,8 @@
+# ResNet50 for Chest X-ray Binary Classification
+
+type: 'resnet50'
+num_classes: 2  # NORMAL, PNEUMONIA
+feature_extractor: true
+pretrained: true
+
+description: 'ResNet50 Feature Extractor for binary classification (X-ray)'

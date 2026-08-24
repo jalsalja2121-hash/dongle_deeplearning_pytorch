@@ -8,7 +8,13 @@
       "Bash(del data_module.py example_usage.py)",
       "Bash(dir:*)",
       "Bash(move rock_paper_scissor data)",
-      "Bash(powershell -Command \"Move-Item -Path rock_paper_scissor -Destination data/ -Force\")"
+      "Bash(powershell -Command \"Move-Item -Path rock_paper_scissor -Destination data/ -Force\")",
+      "Bash(ls:*)",
+      "Bash(powershell:*)",
+      "Bash(tree:*)",
+      "Bash(python scripts/download_roboflow.py:*)",
+      "Bash(python:*)",
+      "Bash(cat:*)"
     ]
   }
 }

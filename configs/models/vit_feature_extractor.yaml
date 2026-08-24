@@ -1,0 +1,8 @@
+# Vision Transformer Feature Extractor Configuration
+
+type: 'vit_b16'
+num_classes: 3
+feature_extractor: true  # Freeze pretrained weights
+pretrained: true
+
+description: 'ViT-B/16 Feature Extractor mode'

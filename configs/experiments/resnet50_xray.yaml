@@ -1,0 +1,41 @@
+# ResNet50 Chest X-ray Pneumonia Classification Experiment
+# Binary classification: NORMAL vs PNEUMONIA
+
+experiment:
+  name: 'resnet50_xray_pneumonia'
+  description: 'ResNet50 for Chest X-ray Pneumonia Detection'
+  seed: 42
+
+# Dataset configuration
+dataset_config: 'configs/datasets/xray_dataset1.yaml'
+
+# Model configuration
+model_config: 'configs/models/resnet50_xray.yaml'
+
+# Training configuration
+training:
+  epochs: 50
+  learning_rate: 0.0001
+  
+  optimizer:
+    type: 'adam'
+    weight_decay: 0.0001
+  
+  scheduler:
+    use: true
+    type: 'cosine'
+    step_size: 50  # T_max for CosineAnnealingLR
+  
+  loss:
+    type: 'crossentropy'  # Can change to 'focal' for class imbalance
+
+  early_stopping:
+    patience: 5  # Stop if no improvement for 5 epochs
+    min_delta: 0.0001  # Minimum improvement threshold
+    monitor: 'val_loss'  # Monitor validation loss
+
+# Output
+output:
+  save_dir: 'outputs/resnet50_xray_pneumonia'
+  model_name: 'model.pth'
+  plot_name: 'training_history.png'

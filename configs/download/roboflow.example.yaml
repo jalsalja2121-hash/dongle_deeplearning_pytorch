@@ -1,0 +1,23 @@
+# Roboflow Dataset Download Configuration Template
+# Copy this file to roboflow.yaml and fill in your details
+
+# API Key
+# IMPORTANT: Do not commit your actual API key to Git!
+# Use environment variable instead: export ROBOFLOW_API_KEY=your_key_here
+api_key: null  # Leave null to use environment variable
+
+# Workspace and Project Information
+# Get these from your Roboflow project URL:
+# https://universe.roboflow.com/{workspace}/{project}
+workspace: 'your-workspace-name'
+project: 'your-project-name'
+version: 1  # Dataset version number
+
+# Download Settings
+format: 'folder'  # Options: folder, yolov5, coco, voc, tensorflow
+location: 'data'  # Download destination path (default: data/)
+
+# Example for Rock-Paper-Scissors dataset:
+# workspace: 'cpecgm3'
+# project: 'rock-paper-scissor-p13xv'
+# version: 2
