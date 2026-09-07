@@ -10,6 +10,12 @@ PyTorch로 이미지 분류 모델을 비교하고, 데이터·모델·학습 �
 | 가위바위보 이미지 분류 | AlexNet, ViT | Rock, Paper, Scissors | 모델별 YAML 실험 구성 |
 | 흉부 X-ray 폐렴 분류 | ResNet50 | NORMAL, PNEUMONIA | Test Accuracy **93.13%** |
 
+### 가위바위보 데이터 예시
+
+| Rock | Paper | Scissors |
+|---|---|---|
+| ![Rock](assets/0bioBZYFCXqJIulm_png.rf.1b4aac018e47af8accf0928ec9bc6fc1.jpg) | ![Paper](assets/0cb6cVL8pkfi4wF6_png.rf.3aa17e9337fe612b1142e5b26ea48d12.jpg) | ![Scissors](assets/0CSaM2vL2cWX6Cay_png.rf.eda063b787e4ab94f65b3b6e3d2efcb3.jpg) |
+
 ### 구현 특징
 
 - Dataset·Model·Trainer를 Registry Pattern으로 분리
