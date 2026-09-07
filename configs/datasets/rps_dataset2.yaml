@@ -1,0 +1,7 @@
+type: rps
+data_root: data/Rock-Paper-Scissor
+description: Alternative Rock-Paper-Scissors dataset path
+batch_size: 32
+image_size: [224, 224]
+num_workers: 0
+augment: true

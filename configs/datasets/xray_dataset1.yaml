@@ -1,0 +1,7 @@
+type: chest_xray
+data_root: data/Chest_Xray
+description: Chest X-ray binary classification dataset (NORMAL vs PNEUMONIA)
+batch_size: 32
+image_size: [224, 224]
+num_workers: 0
+augment: true

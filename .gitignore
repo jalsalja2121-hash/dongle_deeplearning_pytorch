@@ -37,6 +37,10 @@ data/
 !data/README.md
 dataset/
 datasets/
+!src/datasets/
+!src/datasets/*.py
+!configs/datasets/
+!configs/datasets/*.yaml
 train/
 valid/
 test/

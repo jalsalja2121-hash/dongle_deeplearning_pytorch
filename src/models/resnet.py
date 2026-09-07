@@ -1,13 +1,11 @@
-"""
-ResNet50 Model for Rock-Paper-Scissors Classification
-"""
+"""범용 이미지 분류용 ResNet50 모델."""
 import torch.nn as nn
 from torchvision import models
 
 
 class ResNet50(nn.Module):
     """
-    ResNet50 기반 가위바위보 분류 모델
+    ResNet50 기반 이미지 분류 모델
 
     Args:
         num_classes (int): 출력 클래스 개수 (기본값: 3)

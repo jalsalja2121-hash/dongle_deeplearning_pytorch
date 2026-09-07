@@ -1,7 +1,4 @@
-"""
-Rock-Paper-Scissors Classifier Training Script
-YAML 기반 실험 관리 시스템
-"""
+"""YAML 기반 PyTorch 이미지 분류 학습 파이프라인."""
 import argparse
 from pathlib import Path
 import yaml
@@ -167,12 +164,13 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description='Train Rock-Paper-Scissors Classifier',
+        description='Train an image classifier from a YAML experiment config',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
   python main.py --config configs/experiments/vit_rps_quick.yaml
   python main.py --config configs/experiments/vit_rps_full.yaml
+  python main.py --config configs/experiments/resnet50_xray.yaml
         """
     )
     parser.add_argument(

@@ -1,6 +1,4 @@
-"""
-Rock-Paper-Scissors Trainer
-"""
+"""이미지 분류 모델용 Trainer."""
 import torch
 import torch.nn as nn
 from .losses import FocalLoss
@@ -8,7 +6,7 @@ from .losses import FocalLoss
 
 class RockPaperScissorsTrainer:
     """
-    가위바위보 모델 학습을 위한 Trainer 클래스
+    PyTorch 이미지 분류 모델 학습을 위한 Trainer 클래스
 
     Args:
         model: 학습할 PyTorch 모델
